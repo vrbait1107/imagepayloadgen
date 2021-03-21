@@ -1,48 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
-    <script src="/js/index.js"></script>
-    <script src="/js/piexif.js"></script>
-    <link rel="stylesheet" href="style.css">
-    <title>PHP Image Payload Generator</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="PHP Image Payload Generator">
-    <meta charset="utf-8" />
+    <title>PHP Image Payload Generator</title>
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+    <style>
+        .roboto {
+            font-family: 'Roboto', sans-serif;
+        }
+    </style>
+
+    <!-- Javascript -->
+    <script src="./js/index.js"></script>
+    <script src="./js/piexif.js"></script>
 </head>
 
 <body>
-    <h1>PHP Image Upload Payload Generator</h1>
-    <p>This does not bypass resize on PNGs, see <a target="_blank" href="https://www.idontplaydarts.com/2012/06/encoding-web-shells-in-png-idat-chunks/">Encoding Webshells in PNG IDAT chunks</a></p>
-    <p>This tool currently supports EXIF comment embedded payloads, and payloads after a valid file header to bypass MIME type checks</p>
-    <p>Break something? Want to add a feature? <a target="_blank" href="https://github.com/NinjaJc01/imagepayloadgen">https://github.com/NinjaJc01/imagepayloadgen</a></p>
-    <form>
-        <div>
-            <label for="payload">PHP Payload (with tags)</label><input id="payload" name="payload" type="text"
-                placeholder="Enter PHP payload here">
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+
+                <h1 class="text-center roboto text-primary font-weight-bold text-uppercase mb-4">PHP Image Upload
+                    Payload Generator</h1>
+
+                <hr />
+
+                <p>This does not bypass resize on PNGs, see <a target="_blank"
+                        href="https://www.idontplaydarts.com/2012/06/encoding-web-shells-in-png-idat-chunks/">Encoding
+                        Webshells in
+                        PNG
+                        IDAT chunks</a></p>
+
+                <p>This tool currently supports EXIF comment embedded payloads, and payloads after a valid file header
+                    to bypass
+                    MIME
+                    type checks</p>
+
+                <p>Break something? Want to add a feature? <a target="_blank"
+                        href="https://github.com/NinjaJc01/imagepayloadgen">https://github.com/NinjaJc01/imagepayloadgen</a>
+                </p>
+
+
+                <div class="row">
+                    <div class="col-md-8 offset-md-2">
+
+                        <form>
+
+                            <div class="form-group">
+                                <label for="payload">PHP Payload (with tags)</label>
+                                <input type="text" id="payload" name="payload" class="form-control"
+                                    placeholder="Enter PHP payload here">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="embedOption">Payload Embed Method</label>
+                                <select class="form-control" id="embedOption" name="embedOption"
+                                    onchange="onEmbedChosen(this)" autocomplete="off">
+                                    <option selected disabled>Pick a method</option>
+                                    <option value="exif">EXIF Comment</option>
+                                    <option value="mime">After Valid Image Header (MIME/Magic Bytes)</option>
+                                </select>
+                            </div>
+
+
+                            <div style="display: none;" id="fileDiv" class="form-group">
+                                <label for="">Attach Image</label>
+                                <input type="file" id="uploadElem" onchange="imageInfo(this)" accept="image/jpeg">
+                                <p class="mt-1">Note: Image must be JPEG format for EXIF.</p>
+                                <p class="">Warning: Due to the Exif library used, payloads will be UTF16
+                                    encoded which
+                                    may lead
+                                    to additional null bytes</p>
+                            </div>
+
+                            <div class="form-group" style="display: none;" id="headerDiv">
+                                <label for="headerOptions">Header to add:</label>
+                                <select class="form-control" id="headerOptions" onchange="onHeaderChosen(this)">
+                                    <option value="" selected disabled hidden>Pick a header</option>
+                                    <option value="jpegHeader">JPEG</option>
+                                    <option value="pngHeader">PNG</option>
+                                    <option value="gifHeader">GIF (With a hard G)</option>
+                                    <option value="jifHeader">GIF (With a soft G)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="extension">Set extension to (with .):</label>
+                                <input class="form-control" type="text" id="finalExt" placeholder=".jpg.php">
+                            </div>
+
+                            <div class="text-center">
+                                <button class="btn btn-primary" type="button" onclick="makeAndDownloadPayload()">Make My
+                                    Payload!</button>
+                            </div>
+
+                            <div id="statusDiv"></div>
+
+                        </form>
+
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="text-center">
+                    <h5 class="text-warning  roboto font-weight-bold mt-3">Disclaimer: This tool is only to be used
+                        for legal uses such as
+                        CTF
+                        challenges.</h5>
+                </div>
+
+            </div>
         </div>
-        <div>
-            <label for="embedOption">Payload Embed Method</label>
-            <select id="embedOption" name="embedOption" onchange="onEmbedChosen(this)">
-                <option value="" selected disabled hidden>Pick a method</option>
-                <option value="exif">EXIF Comment</option>
-                <option value="mime">After Valid Image Header (MIME/Magic Bytes)</option>
-            </select>
-        </div>
-        <div style="display: none;" id="fileDiv">
-            <label for="">Attach Image</label><input type="file" id="uploadElem" onchange="imageInfo(this)" accept="image/jpeg">
-            <span><em>Note:</em> Image must be JPEG format for EXIF.</span>
-            <p><em>Warning:</em> Due to the Exif library used, payloads will be UTF16 encoded which may lead to additional null bytes</p>
-        </div>
-        <div style="display: none;" id="headerDiv">
-            <label for="headerOptions">Header to add:</label>
-            <select id="headerOptions" onchange="onHeaderChosen(this)">
-                <option value="" selected disabled hidden>Pick a header</option>
-                <option value="jpegHeader">JPEG</option>
-                <option value="pngHeader">PNG</option>
-                <option value="gifHeader">GIF (With a hard G)</option>
-                <option value="jifHeader">GIF (With a soft G)</option>
-            </select>
-        </div>
-        <div><label for="extension">Set extension to (with .):</label><input type="text" id="finalExt" placeholder=".jpg.php"></div>
-        <button type="button" onclick="makeAndDownloadPayload()">Make My Payload!</button>
-        <div id="statusDiv"></div>
-    </form>
-    <p>Disclaimer: This tool is only to be used for legal uses such as CTF challenges.</p>
+    </div>
+
+    <!-- Bootstrap js -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
 </body>
+
+</html>
